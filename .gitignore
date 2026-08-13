@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+/.pnpm-store
+.venv/
+venv/
+ENV/
+env/
+
+# Next.js build output
+.next/
+out/
+build/
+dist/
+.vercel/
+
+# Python cache & build outputs
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+*.egg-info/
+.coverage
+htmlcov/
+
+# Environment variable secret files (DO NOT COMMIT SECRETS)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Operating System & Editor Files
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs and scratch
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+scratch/
