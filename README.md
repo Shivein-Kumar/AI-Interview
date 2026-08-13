@@ -1,6 +1,30 @@
-# AI Interview Coach - Setup & Verification Guide
+# AI Interview Coach - Setup & Deployment Guide
 
 This repository contains the complete full-stack **AI Interview Coach** application, consisting of a FastAPI Python backend powered by Groq LLM (`llama-3.3-70b-versatile`) and a Next.js 14 React frontend built with Tailwind CSS and shadcn/ui.
+
+---
+
+## 📁 Repository Structure
+
+```
+capstone/
+├── .gitignore              # Global gitignore for Python, Node, and secrets
+├── README.md               # Project documentation and deployment guide
+├── backend/
+│   ├── main.py             # FastAPI app entry point & CORS
+│   ├── schemas.py          # Pydantic request models
+│   ├── requirements.txt    # Python dependencies
+│   ├── .env.example        # Environment variable template
+│   ├── routers/            # API routers (/interview, /report)
+│   ├── services/           # Groq LLM service integration
+│   └── tests/              # Unit and integration tests
+└── frontend/
+    ├── src/
+    │   └── app/            # Next.js App Router pages (/, /interview, /report)
+    ├── package.json        # Node dependencies and scripts
+    ├── vitest.config.mts   # Vitest testing configuration
+    └── .env.local          # Frontend local environment configuration
+```
 
 ---
 
@@ -9,11 +33,12 @@ This repository contains the complete full-stack **AI Interview Coach** applicat
 Make sure you have the following installed on your machine:
 - **Node.js** (v18.0.0 or higher) & `npm`
 - **Python** (v3.11 or v3.13)
-- **Groq API Key**: Obtain a key from [Groq API Console](https://console.groq.com/)
+- **Git**
+- **Groq API Key**: Obtain a free key from [Groq API Console](https://console.groq.com/)
 
 ---
 
-## 🛠️ 1. Backend Setup & Verification (`/backend`)
+## 🛠️ 1. Local Backend Setup & Verification (`/backend`)
 
 ### Step 1: Navigate to the backend directory
 ```powershell
@@ -62,7 +87,7 @@ The API server will run at **`http://localhost:8000`**.
 
 ---
 
-## 💻 2. Frontend Setup & Verification (`/frontend`)
+## 💻 2. Local Frontend Setup & Verification (`/frontend`)
 
 ### Step 1: Navigate to the frontend directory
 ```powershell
@@ -99,26 +124,71 @@ Open **`http://localhost:3000`** in your browser.
 
 ---
 
-## 🎯 3. Complete End-to-End Verification
+## 🌐 3. In-Depth Deployment Guide (Render & Vercel)
 
-Follow these steps to test the entire application end-to-end:
+### Part A: Deploying Backend to Render (`onrender.com`)
 
-1. **Start Backend Server**:
+Render is recommended for hosting Python FastAPI services.
+
+#### Step 1: Push Repository to GitHub
+1. Create a new repository on [GitHub](https://github.com/new).
+2. Push your local `capstone` repository:
    ```powershell
-   cd backend
-   python main.py
+   git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
+   git branch -M main
+   git push -u origin main
    ```
-2. **Start Frontend Server** (in a second terminal):
-   ```powershell
-   cd frontend
-   npm run dev
-   ```
-3. Open **`http://localhost:3000`** in your web browser.
-4. **Form Inputs**:
-   - Enter an **Interview Topic** (e.g., `Binary Search Trees` or `Dynamic Programming`).
-   - Select a **Difficulty Level** (`Easy`, `Medium`, or `Hard`).
-5. Click **Start Interview**.
-6. **Verify Flow**:
-   - The button enters a loading state (`Starting Interview...`).
-   - The browser sends a `POST` request to `http://localhost:8000/api/interview/start`.
-   - On success, the application navigates to `/interview` passing URL-encoded parameters for topic, difficulty, first question, and conversation history.
+
+#### Step 2: Create Web Service on Render
+1. Log in to [Render Console](https://dashboard.render.com/).
+2. Click **New +** -> **Web Service**.
+3. Connect your GitHub repository.
+4. Configure the Web Service settings:
+   - **Name**: `ai-interview-coach-backend`
+   - **Region**: Select closest location (e.g. Frankfurt, Oregon, Singapore)
+   - **Branch**: `main` (or `master`)
+   - **Root Directory**: `backend` *(CRITICAL: Must set to `backend`)*
+   - **Runtime**: `Python 3`
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+   - **Instance Type**: `Free`
+
+#### Step 3: Configure Render Environment Variables
+Under **Environment Variables** in Render, add:
+- `GROQ_API_KEY`: `your_actual_groq_api_key_here`
+- `PYTHON_VERSION`: `3.11.7` (optional, forces Python 3.11)
+
+#### Step 4: Deploy & Test Backend URL
+1. Click **Create Web Service**.
+2. Render will build and deploy your API. Once finished, copy your live backend URL (e.g., `https://ai-interview-coach-backend.onrender.com`).
+3. Verify in browser: Visit `https://ai-interview-coach-backend.onrender.com/` — it should return `{"message": "AI Interview Coach API is running"}`.
+
+---
+
+### Part B: Deploying Frontend to Vercel (`vercel.com`)
+
+Vercel is the official host for Next.js applications.
+
+#### Step 1: Import Project to Vercel
+1. Log in to [Vercel Dashboard](https://vercel.com/dashboard).
+2. Click **Add New...** -> **Project**.
+3. Select your GitHub repository (`YOUR_REPO_NAME`).
+
+#### Step 2: Configure Project Settings
+- **Project Name**: `ai-interview-coach-frontend`
+- **Framework Preset**: `Next.js`
+- **Root Directory**: Click **Edit** and select `frontend` *(CRITICAL: Select `frontend`)*
+- **Build Command**: `npm run build` (auto-detected)
+- **Output Directory**: `.next` (auto-detected)
+
+#### Step 3: Add Production Environment Variables
+Under **Environment Variables**, add:
+- **Key**: `NEXT_PUBLIC_API_URL`
+- **Value**: Your live Render backend URL from Part A (e.g., `https://ai-interview-coach-backend.onrender.com`)
+*(Do NOT include a trailing slash `/`)*
+
+#### Step 4: Deploy & Verify
+1. Click **Deploy**.
+2. Vercel will compile the production Next.js build.
+3. Upon completion, click the generated live URL (e.g., `https://ai-interview-coach-frontend.vercel.app`).
+4. Test starting an interview! The frontend will connect to your live Render backend and Groq LLM API.
